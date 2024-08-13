@@ -20,10 +20,8 @@ async fn main() {
 
   let listener = tokio::net::TcpListener::bind(format!("{host}:{port}")).await.unwrap();
 
-  let routes = [
-    format!("http://{host}:{port}, method: GET"),
-    format!("http://{host}:{port}{pre_fix}/health, method: GET"),
-  ];
+  let routes =
+    [format!("http://{host}:{port}, method: GET"), format!("http://{host}:{port}{pre_fix}/health, method: GET")];
 
   generate_api(routes.to_vec());
 

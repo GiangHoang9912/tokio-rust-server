@@ -31,4 +31,3 @@ pub fn setup(input: TokenStream) -> TokenStream {
 
   TokenStream::from(expanded)
 }
-
