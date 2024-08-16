@@ -1,8 +1,14 @@
-use std::sync::Arc;
-
-use axum::{routing::get, Extension, Router};
+use axum::{
+  extract::Path,
+  http::StatusCode,
+  response::{IntoResponse, Response},
+  routing::get,
+  Extension, Json, Router,
+};
 use dotenv::dotenv;
+use serde_json::json;
 use server::{configs::ProdConfig, dbs::initialize_db};
+use std::sync::Arc;
 // use server::{configs::{get_app_configs, get_dsn, get_max_connection},
 use setup::setup;
 use tracing::info;
@@ -24,7 +30,7 @@ async fn main() {
 
   let db_pool = initialize_db(cfg.prod_postgres.get_dsn().as_str(), cfg.prod_postgres.max_connection).await;
   info!("Database connection established.");
-  let app = Router::new().route(&format!("{pre_fix}/health"), get(root)).layer(Extension(Arc::new(db_pool)));
+  let app = Router::new().route(&format!("{pre_fix}/:msg"), get(say_hello)).layer(Extension(Arc::new(db_pool)));
 
   let listener = tokio::net::TcpListener::bind(format!("{}:{}", cfg.prod_web.host, cfg.prod_web.port)).await.unwrap();
 
@@ -40,6 +46,10 @@ async fn main() {
   axum::serve(listener, app).await.unwrap();
 }
 
-async fn root() -> &'static str {
-  "Hello, World!"
+pub async fn say_hello(Path(msg): Path<String>) -> Response {
+  if msg.is_empty() {
+    (StatusCode::NOT_FOUND, "Msg not found !".to_owned()).into_response()
+  } else {
+    (StatusCode::OK, Json(json!({ "msg": msg }))).into_response()
+  }
 }
