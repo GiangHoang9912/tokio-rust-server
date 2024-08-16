@@ -1,0 +1,55 @@
+version: "3.4"
+
+networks:
+  rust_network:
+    driver: bridge
+
+services:
+  rust_redis:
+    container_name: rust_redis
+    restart: "unless-stopped"
+    hostname: rust_redis
+    image: redis:latest
+    command: redis-server --requirepass "rust_redis"
+    ports:
+      - "6379:6379"
+    expose:
+      - 6379
+    networks:
+      - rust_network
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+        max-size: "50m"
+    volumes:
+      - ./server/Services_Data/rust/redis_data:/data
+    deploy:
+      resources:
+        limits:
+          memory: "256m"
+  rust_postgres:
+    container_name: rust_postgres
+    restart: "unless-stopped"
+    image: postgres
+    environment:
+      - POSTGRES_USER=rust_postgres
+      - POSTGRES_PASSWORD=rust_postgres123a
+      - POSTGRES_DB=rust_postgres
+    networks:
+      - rust_network
+    ports:
+      - "5432:5432"
+    expose:
+      - 5432
+    logging:
+      driver: "json-file"
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+        max-size: "50m"
+    volumes:
+      - ./server/Services_Data/rust/postgres:/var/lib/postgresql/data/
+    deploy:
+      resources:
+        limits:
+          memory: "256m"

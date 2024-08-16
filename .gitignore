@@ -1,2 +1,6 @@
 /target
 **/target
+
+server
+.env
+.vscode

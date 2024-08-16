@@ -8,6 +8,7 @@ use syn::{
 struct SetupArgs {
   port: Expr,
   num_cpus: Expr,
+  host: Expr,
 }
 
 impl Parse for SetupArgs {
@@ -15,17 +16,19 @@ impl Parse for SetupArgs {
     let port = input.parse()?;
     input.parse::<Token![,]>()?;
     let num_cpus = input.parse()?;
-    Ok(SetupArgs { port, num_cpus })
+    input.parse::<Token![,]>()?;
+    let host = input.parse()?;
+    Ok(SetupArgs { port, num_cpus, host })
   }
 }
 
 #[proc_macro]
 pub fn setup(input: TokenStream) -> TokenStream {
-  let SetupArgs { port, num_cpus } = parse_macro_input!(input as SetupArgs);
+  let SetupArgs { port, num_cpus, host } = parse_macro_input!(input as SetupArgs);
 
   let expanded = quote! {
     {
-      println!("Server is running on:  http://0.0.0.0:{} on {} cpus", #port, #num_cpus);
+      info!("Server is running on:  http://{}:{} on {} cpus",#host, #port, #num_cpus );
     }
   };
 
